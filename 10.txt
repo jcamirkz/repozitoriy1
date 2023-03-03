@@ -1,0 +1,375 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Transactions;
+using System.Xml.Linq;
+using System.Text.RegularExpressions;
+
+namespace nas
+{
+    public class CStr
+    {
+        public string str;
+        public byte len;
+        //конструкторы
+        public CStr()
+        {
+            this.str = "";
+            this.len = 0;
+        }
+        public CStr(string str)
+        {
+            this.str = str;
+            this.len = (byte)str.Length;
+        }
+        public CStr(char c)
+        {
+            this.str = c.ToString();
+            this.len = 1;
+        }
+        //свойства
+        public byte Lenght
+        {
+            get
+            {
+                return this.len;
+            }
+            
+        }
+        public string Str
+        {
+            get { return str; }
+            set
+            {
+
+                if (value == "")
+                {
+                    str = "Unknown";
+                    len = 0;
+                }
+                else
+                {
+                    str = value;
+                    len = (byte)str.Length;
+                }
+            }
+        }
+
+
+        //очистка строки
+        public void Clear()
+        {
+            this.str = "";
+            this.len = 0;
+        }
+        public static CStr operator +(CStr a, CStr b)
+        {
+            CStr ab = new CStr(a.str + b.str);
+            return ab;
+        }
+        public static int operator ==(CStr a, CStr b)
+        {
+            if (a.str.CompareTo(b.str) == 0)
+            {
+                return 1;
+            }
+            else return 0;
+        }
+        public static int operator !=(CStr a, CStr b)
+        {
+            if (a.str.CompareTo(b.str) == 0)
+            {
+                return 0;
+            }
+            else return 1;
+        }
+        public void Show()
+        {
+            Console.WriteLine(str);
+        }
+       
+    }
+
+
+
+
+
+    public class CStr_ID : CStr
+    {
+
+
+        public CStr_ID(): base(){}
+        public CStr_ID(string str)
+        {
+            if (Flag(str) == 1)
+            {
+                this.str = "";
+                this.len = (byte)str.Length;
+                throw new Exception("\nСтрока "+str+" не соответствует правилам записи идентификаторов, создана пустая строка  ");
+            }
+            if (Flag(str) == 0)
+            {
+                this.str = str;
+                this.len = (byte)str.Length;
+            }
+
+
+        }
+        
+        public CStr_ID(char c)
+        {
+            int flag = 0;
+            int m = c;
+            if ((m < 65 && m > 57) || (m > 90 && m < 97 && m != 95) || (m > 122) || (m < 48))
+            {
+                this.str = "";
+                this.len = (byte)str.Length;
+                flag = 1;
+                throw new Exception("\nСимвол не соответствует правилам записи идентификаторов, создана пустая строка");
+            }
+            if (flag == 0)
+            {
+                this.str = c.ToString();
+                this.len = 1;
+            }
+           
+        }
+        //свойства
+        public static int operator <(CStr_ID a, CStr_ID b)
+        {
+            if (a.str.CompareTo(b.str) > 0)
+            {
+                return 0;
+            }
+            if (a.str.CompareTo(b.str) < 0)
+            {
+                return 1;
+            }
+            else return 2;
+        }
+        public static int operator >(CStr_ID a, CStr_ID b)
+        {
+            if (a.str.CompareTo(b.str) > 0)
+            {
+                return 1;
+            }
+            if (a.str.CompareTo(b.str) < 0)
+            {
+                return 0;
+            }
+            else return 2;
+        }
+        public static int Flag(string str)
+        {
+            //for (int i = 0; i < str.Length; i++)
+            //{
+            // if (('A' <= str[0] && str[0]<='Z') || (str[0]=='_') || (str[0]>='0' && str[0]<='9') || (str[0]>='a' && str[0]<='z'))
+            //{
+            //регулярные выражения 
+            //return 1;
+            // }
+            // else if  (i != 0)
+            // {
+            //if ((str[i] < 65) || (str[i] > 90 && str[i] < 97 && str[i] != 95) || (str[i] > 122))
+            //{
+
+            //  return 1;
+            //}
+
+            //}
+            //}
+            string simvol = str[0].ToString();
+            string s = @"^[a-zA-Z_]+$";//если нашлись цифры
+            string s1 = @"^[a-zA-Z0-9]+$";
+            if (Regex.IsMatch(simvol, s)==false)
+            {
+                return 1;
+            }
+            for (int i=1; i <str.Length; i++)
+            {
+                string h = str[i].ToString();
+                if (Regex.IsMatch(h, s1) == false)
+                {
+                    return 1;
+                }
+            }
+            return 0;
+            
+        }
+    }
+
+
+
+
+    class Class1
+    {
+        static void Main()
+        {
+            bool q = true;
+            while (q) // меню программы
+            {
+
+                Console.WriteLine("Функции: \n");
+                Console.WriteLine("1. Тестовое создание объектов классов (базового и потомка).");
+                Console.WriteLine("2. Тестовое использование свойств класса и метода ввода");
+                Console.WriteLine("5. Сложение строк a + b");
+                Console.WriteLine("6. Равенство строк a == b");
+                Console.WriteLine("7. Сравнение строк a < b");
+                //Console.WriteLine("8. Сравнение строк a > b");
+                Console.WriteLine("0. Выход\n");
+                Console.WriteLine("Выберите действие: ");
+                try
+                {
+                    int d = int.Parse(Console.ReadLine());
+                    switch (d)
+                    {
+                        case 0: { q = false; Console.WriteLine("\nПрограмма завершила работу."); break; }
+                        case 1:
+                            {
+                                Console.WriteLine("Создание объектов базового класса.");
+                                CStr n1 = new CStr();
+                                n1.Show();
+                                CStr n2 = new CStr("«Предложение» — американская романтическая комедия 2009 года режиссёра Энн Флетчер");
+                                n2.Show();
+                                n2.Clear();
+                                Console.WriteLine("Строка очищена {0}, длина строки {1}", n2.Str, n2.Lenght);
+                                CStr n3 = new CStr('*');
+                                n3.Show();
+                                Console.WriteLine("Создание объектов потомка.");
+                                CStr n6 = new CStr_ID();
+                                n6.Show();
+                                CStr n4 = new CStr_ID("Factor factor _factor");
+                                n4.Show();
+                                CStr n5 = new CStr_ID('l');
+                                n5.Show();
+                                n5.Clear();
+                                Console.WriteLine("Строка очищена {0}, длина строки {1}", n5.Str, n5.Lenght);
+                                break;
+                            }
+                        case 2:
+                            {
+                                Console.WriteLine("\nДля демонстрации свойств класса и метода вывода введите строку.");
+                                CStr s1 = new CStr(Console.ReadLine());
+                                Console.WriteLine("\nСозданa строка:");
+                                Console.WriteLine("{0}, длина строки {1}", s1.Str, s1.Lenght);
+                                s1.Str = "Строка изменена";
+                                Console.WriteLine("\nДанные даты изменены: ");
+                                Console.WriteLine("{0}, длина строки {1}", s1.Str, s1.Lenght);
+                                //Console.WriteLine("\nРазница в возрасте составляет " + (s2 - s1) + " дней/(день).");
+                                break;
+                            }
+                        case 5:
+                            {
+                                Console.WriteLine("Сложение строк");
+                                Console.WriteLine("Введите первую строку");
+                                string m = Console.ReadLine(); 
+                                CStr s1 = new CStr(m);
+                                Console.WriteLine("Введите вторую строку");
+                                string k = Console.ReadLine();
+                                CStr s2 = new CStr(k);
+                                CStr s3 = new CStr();
+                                s3 = s1 + s2;
+                                Console.WriteLine("Сложение строк " + s3.Str);
+                                //Console.WriteLine("\nРазница в возрасте составляет " + (s2 - s1) + " дней/(день).");
+                                break;
+                            }
+                        case 6:
+                            {
+                                Console.WriteLine("Сравнение строк");
+                                Console.WriteLine("Введите первую строку");
+                                string m = Console.ReadLine();
+                                CStr s1 = new CStr(m);
+                                Console.WriteLine("Введите вторую строку");
+                                string k = Console.ReadLine();
+                                CStr_ID s2 = new CStr_ID(k);
+                                int s3;
+                                s3 = s1 == s2;
+                                if (s3 == 1)
+                                {
+                                    Console.WriteLine("Строки равны ");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Строки не равны ");
+                                }
+                                //Console.WriteLine("\nРазница в возрасте составляет " + (s2 - s1) + " дней/(день).");
+                                break;
+                            }
+                        case 7:
+                            {
+                                int s3;
+                                Console.WriteLine("Сравнение строк");
+                                Console.WriteLine("Введите первую строку");
+                                string m = Console.ReadLine();
+                                string[] identificator_1 = m.Split(' ');
+                                Console.WriteLine("Введите вторую строку");
+                                string k = Console.ReadLine();
+                                string[] identificator = k.Split(' ');
+                                if (identificator.Length > identificator_1.Length)
+                                {
+                                    for (int i = 0; i < identificator_1.Length; i++)
+                                    {
+                                        s3 = 0;
+                                        CStr_ID s1 = new CStr_ID(identificator_1[i]);
+                                        CStr_ID s2 = new CStr_ID(identificator[i]);
+                                        s3 = s1 < s2;
+                                        if (s3 == 1)
+                                        {
+                                            Console.WriteLine("Первая строка меньше второй "+ identificator_1[i]+"  "+ identificator[i]);
+                                        }
+                                        else if (s3==0)
+                                        {
+                                            Console.WriteLine("Первая строка больше второй "+ identificator_1[i] + "  " + identificator[i]);
+                                        }
+                                        else if (s3 == 2)
+                                        {
+                                            Console.WriteLine("строки равны "+ identificator_1[i] + "  " + identificator[i]);
+                                        }
+                                    }
+                                   
+                                }
+                                else
+                                {
+                                    for (int i = 0; i < identificator.Length; i++)
+                                    {
+                                        s3 = 0;
+                                        CStr_ID s1 = new CStr_ID(identificator_1[i]);
+                                        CStr_ID s2 = new CStr_ID(identificator[i]);
+                                        s3 = s1 < s2;
+                                        if (s3 == 1)
+                                        {
+                                            Console.WriteLine("Первая строка меньше второй "+ identificator_1[i] + "  " + identificator[i]);
+                                        }
+                                        else if (s3==0)
+                                        {
+                                            Console.WriteLine("Первая строка больше второй "+ identificator_1[i] + "  " + identificator[i]);
+                                        }
+                                        else if (s3 == 2)
+                                        {
+                                            Console.WriteLine("строки равны "+ identificator_1[i] + "  " + identificator[i]);
+                                        }
+                                    }
+                                    
+                                }
+                                
+                                break;
+                            }
+                        
+                        default: Console.WriteLine("\nОшибка ввода.\n"); break;
+                    }
+                } //try
+
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+                Console.WriteLine("\nДля продолжения нажмите Enter.\n");
+                Console.ReadKey();
+            }
+        }
+    }
+}
+    
